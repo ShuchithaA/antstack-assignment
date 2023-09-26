@@ -51,7 +51,8 @@ def expand_url(short_url):
         return "Short URL not found"
 
 # Main program loop
-while True:
+running=True
+while running==True :
     print("1. Shorten URL")
     print("2. Expand Short URL")
     print("3. Exit")
@@ -62,12 +63,15 @@ while True:
         long_url = input("Enter the URL you want to shorten: ")
         short_url = shorten_url(long_url)
         print("Shortened URL:", short_url)
+        
     elif choice == "2":
         short_url = input("Enter the short URL you want to expand: ")
         long_url = expand_url(short_url)
         print("Expanded URL:", long_url)
+        
     elif choice == "3":
         print("Exiting the program.")
+        running=False
         break
     else:
         print("Invalid choice. Please enter 1, 2, or 3.")
