@@ -34,14 +34,6 @@ def lambda_handler(event, context):
     
         # Attempt to establish an HTTPS connection
         conn = http.client.HTTPSConnection(hostname, port=port)
-        
-        # Add a custom User-Agent header to the request
-        headers = {"User-Agent": "YourCustomUserAgent"}
-        
-        #adding request body
-        # request_body = json.loads(event['body'])
-        # website_url_body = request_body.get("website_url", '')
-        
         conn.request("GET", parsed_url.path)
         response = conn.getresponse()
 
