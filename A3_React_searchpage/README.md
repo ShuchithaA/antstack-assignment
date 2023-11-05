@@ -1,6 +1,12 @@
 # Assignment 3
 
+Create a user with S3 and lambda access 
 Create a React Search Page
+Host the React search page on S3 bucket
+    create bucket on s3
+    upload files
+    set bucket permissions
+    configure static hosting on S3
 
 # Getting Started with Create React App
 

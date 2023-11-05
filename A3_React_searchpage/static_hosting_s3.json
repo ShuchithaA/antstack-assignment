@@ -1,7 +1,3 @@
-#create bucket on s3
-#upload files
-#set bucket permissions
-
 {
     "Version": "2012-10-17",
     "Statement": [
@@ -15,4 +11,4 @@
     ]
 }
 
-#configure static hosting on S3
+
