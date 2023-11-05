@@ -1,8 +1,6 @@
 # Assignment 3
 
-Create a React search page
-
-
+Create a React Search Page
 
 # Getting Started with Create React App
 
@@ -74,6 +72,3 @@ This section has moved here: [https://facebook.github.io/create-react-app/docs/d
 ### `npm run build` fails to minify
 
 This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
-
-
-##
