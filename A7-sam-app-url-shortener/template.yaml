@@ -89,9 +89,4 @@ Outputs:
         - URLShortenerTable
         - Arn
   
-  MyApiUrl:
-    Description: "API Gateway URL"
-    Value:
-      Fn::Sub:
-        - "https://${ApiId}.execute-api.${AWS::Region}.amazonaws.com/Prod"
-        - ApiId: !Ref APIurl
+ 
