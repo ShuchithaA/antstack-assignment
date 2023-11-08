@@ -17,6 +17,6 @@ build:
       - git checkout
       - pip install -r requirements.txt
       - pip install pytest
-      - pytest
+      - pytest test_app.py
       - sam build
       - sam deploy --stack-name sam-app-url-shortener --region ap-south-1 --parameter-overrides S3BucketName=s-bucket-cicd1  --no-confirm-changeset --no-fail-on-empty-changeset --capabilities CAPABILITY_IAM --resolve-s3
