@@ -4,10 +4,10 @@ Description: >
   sam-app-url-shortener
   Sample SAM Template for sam-app-url-shortener
 Resources:
-  MyS3Bucket:
-       Type: AWS::S3::Bucket
-       Properties:
-         BucketName: s-bucket-cicd1
+  # MyS3Bucket:
+  #      Type: AWS::S3::Bucket
+  #      Properties:
+  #        BucketName: s-bucket-cicd1
   APIurl:
     Type: AWS::Serverless::Api
     Properties:
@@ -51,8 +51,8 @@ Resources:
         Policies:
           - DynamoDBCrudPolicy:
               TableName: !Ref URLShortenerTable
-          - S3CrudPolicy:
-          BucketName: !Ref MyS3Bucket
+          # - S3CrudPolicy:
+          # BucketName: !Ref MyS3Bucket
       
   URLShortenerTable:
     Type: AWS::DynamoDB::Table
