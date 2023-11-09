@@ -1,0 +1,223 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  sam-app-url-shortener
+  Sample SAM Template for sam-app-url-shortener
+Resources:
+  MyS3Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: s-bucket-cicd1
+
+  URLShortenerTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: s_url_shortener_table
+      AttributeDefinitions:
+        - AttributeName: ShortID
+          AttributeType: S
+        - AttributeName: OriginalURL
+          AttributeType: S
+      KeySchema:
+        - AttributeName: ShortID
+          KeyType: HASH
+      BillingMode: PAY_PER_REQUEST
+      GlobalSecondaryIndexes:
+        - IndexName: OriginalURLIndex
+          KeySchema:
+            - AttributeName: OriginalURL
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+
+  LambdaIamRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: "sts:AssumeRole"
+      Path: "/"
+  URLShortenerFunction:
+      Type: AWS::Serverless::Function 
+      Properties:
+        Handler: app.lambda_handler
+        Runtime: python3.11
+        CodeUri: ./url-shortener
+        Role: !GetAtt LambdaIamRole.Arn  
+        Environment:
+          Variables:
+            TABLE_NAME: !Ref URLShortenerTable
+            REGION_NAME: ap-south-1
+        Policies:
+          - DynamoDBCrudPolicy:
+              TableName: !Ref URLShortenerTable
+          - S3CrudPolicy:
+              BucketName: !Ref MyS3Bucket
+
+  UrlshortenerApi:
+    Type: AWS::ApiGateway::RestApi
+    Properties:
+      ApiKeySourceType: HEADER
+      Description: An API Gateway with a Lambda Integration
+      Name: s-url-api
+
+  ApiGatewayResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      ParentId: !GetAtt UrlshortenerApi.RootResourceId
+      PathPart: '{shortenurl}'
+      RestApiId: !Ref UrlshortenerApi
+
+  ApiGatewayMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+     RestApiId: !Ref UrlshortenerApi
+     ResourceId: !Ref ApiGatewayResource
+     HttpMethod: GET
+     AuthorizationType: NONE
+     RequestParameters:
+       method.request.querystring.url: true
+     Integration:
+      Type: HTTP
+      IntegrationHttpMethod: GET
+      Uri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${URLShortenerFunction.Arn}/invocations'
+      Credentials: !GetAtt ApiGatewayIamRole.Arn
+  ProxyParentResource:
+    Type: 'AWS::ApiGateway::Resource'
+    Properties:
+      RestApiId: !Ref UrlshortenerApi
+      ParentId: !GetAtt UrlshortenerApi.RootResourceId
+      PathPart: 'proxy'   
+  ProxyResource:
+    Type: 'AWS::ApiGateway::Resource'
+    Properties:
+      RestApiId: !Ref UrlshortenerApi
+      ParentId: !Ref ProxyParentResource
+      PathPart: '{proxy+}'
+
+  ProxyGetMethod:
+    Type: 'AWS::ApiGateway::Method'
+    Properties:
+      RestApiId: !Ref UrlshortenerApi
+      ResourceId: !Ref ProxyResource
+      HttpMethod: GET
+      AuthorizationType: NONE  
+
+  ApiGatewayDeployment:
+    Type: AWS::ApiGateway::Deployment
+    DependsOn: ApiGatewayMethod
+    Properties:
+      Description: Lambda API Deployment
+      RestApiId: !Ref UrlshortenerApi
+
+  ApiGatewayStage:
+    Type: AWS::ApiGateway::Stage
+    Properties:
+      StageName: Prod
+      Description: Prod Stage
+      RestApiId: !Ref UrlshortenerApi
+      DeploymentId: !Ref ApiGatewayDeployment
+      Variables:
+        Stack: Prod
+      MethodSettings:
+        - ResourcePath: /{shortenurl}
+          HttpMethod: GET
+          MetricsEnabled: true
+          DataTraceEnabled: false
+        - ResourcePath: /{proxy+}
+          HttpMethod: GET
+          MetricsEnabled: true
+          DataTraceEnabled: false
+
+  ApiGatewayIamRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - apigateway.amazonaws.com
+            Action: 'sts:AssumeRole'
+      Path: /
+      Policies:
+        - PolicyName: 'ApiGatewayInvokeLambda'
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action: 'lambda:InvokeFunction'
+                Resource: '*'
+
+  LambdaApiGatewayInvoke:
+    Type: "AWS::Lambda::Permission"
+    Properties:
+      Action: "lambda:InvokeFunction"
+      FunctionName: !GetAtt "URLShortenerFunction.Arn"
+      Principal: "apigateway.amazonaws.com"
+      SourceArn: !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${UrlshortenerApi}/*/*'
+  
+  
+  
+  
+  
+  # MyRestApiStack:
+  #   Type: 'AWS::CloudFormation::Stack'
+  #   Properties:
+  #     TemplateURL: https://s-rest-api-sam-url.s3.ap-south-1.amazonaws.com/Restapi.yaml
+
+  # S3AccessRole:
+  #   Type: 'AWS::IAM::Role'
+  #   Properties:
+  #     AssumeRolePolicyDocument:
+  #       Version: '2012-10-17'
+  #       Statement:
+  #         - Effect: Allow
+  #           Principal:
+  #             Service:
+  #               - cloudformation.amazonaws.com
+  #           Action: 'sts:AssumeRole'
+  #     Path: /
+  #     Policies:
+  #       - PolicyName: 'S3AccessPolicy'
+  #         PolicyDocument:
+  #           Version: '2012-10-17'
+  #           Statement:
+  #             - Effect: Allow
+  #               Action:
+  #                 - 's3:GetObject'
+  #                 - 's3:ListBucket'
+  #               Resource: 
+  #                 - !Sub 'arn:aws:s3:::${s-rest-api-sam-url}'
+                 
+ 
+  
+Outputs:
+  URLShortenerFunction:
+    Description: "URL Shortener Lambda Function"
+    Value:
+      Fn::GetAtt:
+        - URLShortenerFunction
+        - Arn
+  URLShortenerTable:
+    Description: "URL Shortener DynamoDB Table"
+    Value:
+      Fn::GetAtt:
+        - URLShortenerTable
+        - Arn
+  LambdaIamRole:
+    Description: "IAM Role created for Lambda"
+    Value: !GetAtt ApiGatewayIamRole.Arn
+
+  UrlshortenerApi:
+    Description: "API Gateway endpoint URL for Prod stage"
+    Value: !Sub "https://${UrlshortenerApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/"
+  
+  ApiGatewayIamRole:
+    Description: "IAM Role created for API Gateway"
+    Value: !GetAtt ApiGatewayIamRole.Arn
