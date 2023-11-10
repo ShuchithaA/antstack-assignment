@@ -6,15 +6,19 @@ phases:
  pre_build:
    commands:
     #  - cd antstack-assignment
-     - git sparse-checkout init
-     - git sparse-checkout set A7-sam-app-url-shortener
-     - git checkout
-     - pip install -r requirements.txt
-     - pip install pytest
-     - pytest test_app.py
+    - git sparse-checkout init
+    - git sparse-checkout set A7-sam-app-url-shortener
+    - git checkout
+    - pip install -r requirements.txt
+    - pip install pytest
+    - pytest test_app.py
  build:
    commands:
-     - sam build
+    - sam build
+ post_build:
+   commands:
+     - aws s3 cp build/ s3://s-bucket-cicd1/build-output/ --recursive
+     - echo Build output copied to S3 bucket
      
  
      
