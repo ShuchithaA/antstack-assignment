@@ -1,0 +1,15 @@
+{
+ 	"version": 0.0,
+ 	"Resources": [{
+ 		"URLShortenerFunction:": {
+ 			"Type": "AWS::Serverless::Function",
+ 			"Properties": {
+ 				"Name": "URLShortenerFunction:",
+ 				"Alias": "Live",
+ 				"CurrentVersion": "1",
+ 				"TargetVersion": "2"
+ 			}
+ 		}
+ 	}]
+ 	
+ }
