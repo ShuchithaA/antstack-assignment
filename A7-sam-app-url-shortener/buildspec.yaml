@@ -16,13 +16,13 @@ phases:
    commands:
      - sam build
      
- post_build:
-   commands:
-     - echo Build completed on `date`
+ 
      
-# artifacts:
-#  files:
-#    - '**/*'
+artifacts:
+ files:
+   - '**/*'
+ base-directory: build
+ name: build-output 
 
 
 
