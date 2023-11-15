@@ -82,6 +82,9 @@ Resources:
     Properties:
       RepositoryName: s-urlshortener-repo
       RepositoryDescription: code commit repo
+
+  
+
   CodeBuildRole:
     Type: AWS::IAM::Role
     Properties:
@@ -106,11 +109,17 @@ Resources:
                   - s3:GetBucketLocation
                   - s3:GetObjectAcl
                   - s3:ListBucket
-                Resource: !GetAtt MyS3Bucket.Arn  
+                  - logs:CreateLogStream
+                Resource: !GetAtt MyS3Bucket.Arn 
+                 
               - Effect: Allow
                 Action:
                   - codecommit:GitPull 
                 Resource: !GetAtt CodeCommitRepository.Arn
+
+              - Effect: Allow
+                Action: logs:CreateLogStream
+                Resource: "arn:aws:logs:ap-south-1:960351580303:log-group:/aws/codebuild/CodeBuild"
   CodeBuildProject:
     Type: AWS::CodeBuild::Project
     Properties:
@@ -149,6 +158,9 @@ Resources:
               - Effect: Allow
                 Action:
                   - codepipeline:*
+                  - codecommit:*
+                  - codebuild:*
+                  - s3:*
                 Resource: "*"
                 
   CodePipeline:
@@ -172,8 +184,8 @@ Resources:
               - Name: SourceOutput
             Configuration:
               RepositoryName: s-urlshortener-repo
-              BranchName: main
-              PollForSourceChanges: true
+              BranchName: master
+              PollForSourceChanges: false
       - Name: Build
         Actions:
           - Name: CodeBuildAction
@@ -200,6 +212,21 @@ Resources:
               - Name: SourceOutput
             Configuration:
               FunctionName: URLShortenerFunction
+
+  MyCodeCommitRule:
+    Type: AWS::Events::Rule
+    Properties:
+      Description: "Trigger CodePipeline on CodeCommit changes"
+      EventPattern:
+        source:
+          - "aws.codecommit"
+        detail-type:
+          - "CodeCommit Repository State Change"
+        resources:
+          - !GetAtt CodeCommitRepository.Arn
+      # Targets:
+      #   - Arn: !GetAtt CodePipeline.Arn
+      #     Id: "TargetCodePipeline"
                               
 Outputs:
   URLShortenerFunction:
