@@ -1,21 +1,30 @@
 version: 0.2
-build:
-    commands:
-      - cd antstack-assignment
-        
-        # Enable sparse-checkout
-      - git sparse-checkout init
-        
-        # Set the subdirectory you're interested in
-      - git sparse-checkout set A7-sam-app-url-shortener
-        
-        # Now checkout the files
-      - git checkout
-      - pip install -r requirements.txt
-      - pip install pytest
-      - pytest test_app.py
-      - sam build
-      - sam deploy --stack-name sam-app-url-shortener --region ap-south-1 --parameter-overrides S3BucketName=s-bucket-cicd1  --no-confirm-changeset --no-fail-on-empty-changeset --capabilities CAPABILITY_IAM --resolve-s3
-
-   
+phases:
+ install:
+   runtime-versions:
+     python: 3.11
+ pre_build:
+   commands:
+     - cd antstack-assignment
+     - git sparse-checkout init
+     - git sparse-checkout set A7-sam-app-url-shortener
+     - git checkout
+     - pip install -r requirements.txt
+     - pip install pytest
+     - pytest test_app.py
+ build:
+   commands:
+     - sam build
      
+ post_build:
+   commands:
+     - echo Build completed on `date`
+     
+# artifacts:
+#  files:
+#    - '**/*'
+
+
+
+
+# - sam deploy --stack-name sam-app-url-shortener --region ap-south-1 --parameter-overrides S3BucketName=s-bucket-cicd1 --no-confirm-changeset --no-fail-on-empty-changeset --capabilities CAPABILITY_IAM --resolve-s3

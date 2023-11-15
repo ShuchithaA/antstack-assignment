@@ -1,0 +1,21 @@
+{
+    "configurations": [
+        {
+            "type": "aws-sam",
+            "request": "direct-invoke",
+            "name": "API A7-sam-app-url-shortener:URLShortenerFunction",
+            "invokeTarget": {
+                "target": "api",
+                "templatePath": "${workspaceFolder}/A7-sam-app-url-shortener/template.yaml",
+                "logicalId": "URLShortenerFunction"
+            },
+            "api": {
+                "path": "/",
+                "httpMethod": "get",
+                "payload": {
+                    "json": {}
+                }
+            }
+        }
+    ]
+}
