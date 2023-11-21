@@ -1,0 +1,27 @@
+Start State Machine
+
+State: Ingredient1
+    Execute Lambda function IngredientFunction1
+    Retrieve ingredient and time info for Ingredient 1
+    include "TimeSeconds" field that specifies how long that stage takes
+    Pass ingredient and time info to OrderIngredient2
+
+State: OrderIngredient2
+    Execute Lambda function IngredientFunction2
+    Retrieve ingredient and time info for Ingredient 2
+    include "TimeSeconds" field that specifies how long that stage takes
+    Pass ingredient and time info from previous stages to Ingredient3
+
+... (Repeat for stages Ingredient3 through Ingredient6)
+
+State: OrderIngredient6
+    Execute Lambda function OrderIngredientFunction6
+    Retrieve ingredient and time info for Ingredient 6
+    Pass all ingredient and time info to CalculateTotal
+
+State: CalculateTotal
+    Execute Lambda function CalculateTotalFunction
+    Calculate total number of ingredients
+    Calculate total time taken
+    Return total number of ingredients and total time
+    End State Machine

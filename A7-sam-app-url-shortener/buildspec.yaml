@@ -20,8 +20,7 @@ phases:
 
   post_build:
     commands:
-    #   - aws s3 cp A7-sam-app-url-shortener/build/ s3://s-bucket-cicd1/build-output/ --recursive
-    #   - echo "Build output copied to S3 bucket"
+    
       - echo "Build output copied to S3 bucket"
 
 artifacts:
