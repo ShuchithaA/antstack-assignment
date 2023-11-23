@@ -1,0 +1,162 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  A8-sam-stepfunction-recipe
+
+  Sample SAM Template for A8-sam-stepfunction-recipe
+Resources:
+  
+  RoleStepfuncRecipe:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - states.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Policies:
+        - PolicyName: s-policy-stepfunction
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogDelivery
+                  - logs:GetLogDelivery
+                  - logs:UpdateLogDelivery
+                  - logs:DeleteLogDelivery
+                  - logs:ListLogDeliveries
+                  - logs:PutResourcePolicy
+                  - logs:DescribeResourcePolicies
+                  - logs:DescribeLogGroups
+                Resource: '*'
+
+              - Effect: Allow
+                Action:
+                  - lambda:InvokeFunction
+                Resource: '*'
+                  # - !GetAtt Ing1Recipe.Arn
+                  # - !GetAtt Ing2Recipe.Arn
+                  # - !GetAtt Ing3Recipe.Arn
+                  # - !GetAtt Ing4Recipe.Arn
+                  # - !GetAtt Recipe.Arn
+                
+              - Effect: Allow
+                Action:
+                  - xray:PutTraceSegments
+                  - xray:PutTelemetryRecords
+                  - xray:GetSamplingRules
+                  - xray:GetSamplingTargets
+                Resource: '*'
+
+  MyLogGroup: 
+    Type: AWS::Logs::LogGroup
+    Properties: 
+      LogGroupName: MyLogGroup
+      RetentionInDays: 7
+
+  StateMachineRecipe:
+    Type: AWS::Serverless::StateMachine
+    Properties:
+      DefinitionUri: state_machine_definition.json
+      Role: !GetAtt RoleStepfuncRecipe.Arn
+      Type: EXPRESS
+      Logging:
+        Level: ALL 
+        IncludeExecutionData: true
+        Destinations:
+          - CloudWatchLogsLogGroup:
+              LogGroupArn: !GetAtt MyLogGroup.Arn
+    
+  RolelambdaRecipe:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Policies:
+        - PolicyName: s-stepfunc-lambda-policy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: '*'
+  
+              
+
+  Ing1Recipe:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: Ing1Recipe.lambda_handler
+      Runtime: python3.11
+      CodeUri: ./Recipe
+      Role: !GetAtt RolelambdaRecipe.Arn
+
+  Ing2Recipe:
+    Type:  AWS::Serverless::Function
+    Properties:
+      Handler: Ing2Recipe.lambda_handler
+      Runtime: python3.11
+      CodeUri: ./Recipe
+      Role: !GetAtt RolelambdaRecipe.Arn
+
+  Ing3Recipe:
+    Type:  AWS::Serverless::Function
+    Properties:
+      Handler: Ing3Recipe.lambda_handler
+      Runtime: python3.11
+      CodeUri: ./Recipe
+      Role: !GetAtt RolelambdaRecipe.Arn
+
+  Ing4Recipe:
+    Type:  AWS::Serverless::Function
+    Properties:
+      Handler: Ing4Recipe.lambda_handler
+      Runtime: python3.11
+      CodeUri: ./Recipe
+      Role: !GetAtt RolelambdaRecipe.Arn
+
+  Recipe:
+    Type:  AWS::Serverless::Function
+    Properties:
+      Handler: Recipe.lambda_handler
+      Runtime: python3.11
+      CodeUri: ./Recipe
+      Role: !GetAtt RolelambdaRecipe.Arn
+
+
+Outputs:
+ Ing1Recipe:
+   Description: The ARN of the first Lambda function
+   Value: !GetAtt Ing1Recipe.Arn
+ Ing2Recipe:
+   Description: The ARN of the second Lambda function
+   Value: !GetAtt Ing2Recipe.Arn
+ Ing3Recipe:
+   Description: The ARN of the third Lambda function
+   Value: !GetAtt Ing3Recipe.Arn
+ Ing4Recipe:
+   Description: The ARN of the fourth Lambda function
+   Value: !GetAtt Ing4Recipe.Arn
+ Recipe:
+   Description: The ARN of the fifth Lambda function
+   Value: !GetAtt Recipe.Arn
+ StateMachineArn:
+   Description: The ARN of the state machine
+   Value: !GetAtt StateMachineRecipe.Arn
+
+

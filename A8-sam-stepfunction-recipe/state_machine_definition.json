@@ -1,0 +1,136 @@
+{
+    "Comment": "A description of my state machine",
+    "StartAt": "chocolate",
+    "States": {
+      "chocolate": {
+        "Type": "Task",
+        "Resource": "arn:aws:states:::lambda:invoke",
+        "Parameters": {
+          "FunctionName": "arn:aws:lambda:ap-south-1:960351580303:function:A8-sam-stepfunction-recipe-Ing1Recipe-ZIi387h6cXYk"
+        
+          },
+        "Retry": [
+          {
+            "ErrorEquals": [
+              "Lambda.ServiceException",
+              "Lambda.AWSLambdaException",
+              "Lambda.SdkClientException",
+              "Lambda.TooManyRequestsException"
+            ],
+            "IntervalSeconds": 1,
+            "MaxAttempts": 3,
+            "BackoffRate": 2
+          }
+        ],
+        "Next": "coffee powder",
+        "OutputPath": "$.Payload.body"
+      },
+      "coffee powder": {
+        "Type": "Task",
+        "Resource": "arn:aws:states:::lambda:invoke",
+        "Parameters": {
+          "FunctionName": "arn:aws:lambda:ap-south-1:960351580303:function:A8-sam-stepfunction-recipe-Ing2Recipe-C9k2ZpruBVIF",
+          "Payload.$": "$"
+        },
+        "Retry": [
+          {
+            "ErrorEquals": [
+              "Lambda.ServiceException",
+              "Lambda.AWSLambdaException",
+              "Lambda.SdkClientException",
+              "Lambda.TooManyRequestsException"
+            ],
+            "IntervalSeconds": 1,
+            "MaxAttempts": 3,
+            "BackoffRate": 2
+          }
+        ],
+        "Next": "Parallel",
+        "OutputPath": "$.Payload.body"
+      },
+      "Parallel": {
+        "Type": "Parallel",
+        "Branches": [
+          {
+            "StartAt": "sugar",
+            "States": {
+              "sugar": {
+                "Type": "Task",
+                "Resource": "arn:aws:states:::lambda:invoke",
+                "Parameters": {
+                  "FunctionName": "arn:aws:lambda:ap-south-1:960351580303:function:A8-sam-stepfunction-recipe-Ing3Recipe-kgqFKKWHWz2g",
+                  "Payload.$": "$"
+                },
+                "Retry": [
+                  {
+                    "ErrorEquals": [
+                      "Lambda.ServiceException",
+                      "Lambda.AWSLambdaException",
+                      "Lambda.SdkClientException",
+                      "Lambda.TooManyRequestsException"
+                    ],
+                    "IntervalSeconds": 1,
+                    "MaxAttempts": 3,
+                    "BackoffRate": 2
+                  }
+                ],
+                "OutputPath": "$.Payload.body",
+                "End": true
+              }
+            }
+          },
+          {
+            "StartAt": "milk",
+            "States": {
+              "milk": {
+                "Type": "Task",
+                "Resource": "arn:aws:states:::lambda:invoke",
+                "Parameters": {
+                  "FunctionName": "arn:aws:lambda:ap-south-1:960351580303:function:A8-sam-stepfunction-recipe-Ing4Recipe-8y78CqMXCogd",
+                  "Payload.$": "$"
+                },
+                "Retry": [
+                  {
+                    "ErrorEquals": [
+                      "Lambda.ServiceException",
+                      "Lambda.AWSLambdaException",
+                      "Lambda.SdkClientException",
+                      "Lambda.TooManyRequestsException"
+                    ],
+                    "IntervalSeconds": 1,
+                    "MaxAttempts": 3,
+                    "BackoffRate": 2
+                  }
+                ],
+                "OutputPath": "$.Payload.body",
+                "End": true
+              }
+            }
+          }
+        ],
+        "Next": "Coffee"
+      },
+      "Coffee": {
+        "Type": "Task",
+        "Resource": "arn:aws:states:::lambda:invoke",
+        "Parameters": {
+          "Payload.$": "$",
+          "FunctionName": "arn:aws:lambda:ap-south-1:960351580303:function:A8-sam-stepfunction-recipe-Recipe-Lwm1KhKIW2HZ"
+        },
+        "Retry": [
+          {
+            "ErrorEquals": [
+              "Lambda.ServiceException",
+              "Lambda.AWSLambdaException",
+              "Lambda.SdkClientException",
+              "Lambda.TooManyRequestsException"
+            ],
+            "IntervalSeconds": 1,
+            "MaxAttempts": 3,
+            "BackoffRate": 2
+          }
+        ],
+        "End": true
+      }
+    }
+  }

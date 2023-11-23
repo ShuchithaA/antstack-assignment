@@ -3,6 +3,34 @@
         {
             "type": "aws-sam",
             "request": "direct-invoke",
+            "name": "A8-sam-stepfunction-recipe:s-ing5-recipe",
+            "invokeTarget": {
+                "target": "template",
+                "templatePath": "${workspaceFolder}/A8-sam-stepfunction-recipe/template.yaml",
+                "logicalId": "s-ing5-recipe"
+            },
+            "lambda": {
+                "payload": {},
+                "environmentVariables": {}
+            }
+        },
+        {
+            "type": "aws-sam",
+            "request": "direct-invoke",
+            "name": "A8-sam-stepfunction-recipe:lambda",
+            "invokeTarget": {
+                "target": "template",
+                "templatePath": "${workspaceFolder}/A8-sam-stepfunction-recipe/template.yaml",
+                "logicalId": "lambda"
+            },
+            "lambda": {
+                "payload": {},
+                "environmentVariables": {}
+            }
+        },
+        {
+            "type": "aws-sam",
+            "request": "direct-invoke",
             "name": "API A7-sam-app-url-shortener:URLShortenerFunction",
             "invokeTarget": {
                 "target": "api",
