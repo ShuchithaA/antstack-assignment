@@ -7,7 +7,7 @@
 	
 
 # code implementation
- 5 lambda functions are present in Recipe folder
+ 5 lambda functions are present in Recipe folder,
  sam template with state machine ,lambdas, role , and log resource is described
  state_machine_definition.json file has the definition of state machine defined
 	
