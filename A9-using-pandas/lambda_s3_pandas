@@ -1,0 +1,25 @@
+import boto3
+import pandas as pd
+import io
+
+def lambda_handler(event, context):
+   
+   s3 = boto3.client('s3')
+   bucket_name = 's-csv'
+   file_key = 'movie_titles.csv' 
+
+   try:
+       response = s3.get_object(Bucket=bucket_name, Key=file_key)
+       csv_content = response['Body'].read().decode('utf-8')
+       df = pd.read_csv(io.StringIO(csv_content))
+       print(df.head(5))
+
+       return {
+           'statusCode': 200,
+           'body': 'File read successfully into DataFrame.'
+       }
+   except Exception as e:
+       return {
+           'statusCode': 500,
+           'body': str(e)
+       }
