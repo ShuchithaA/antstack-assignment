@@ -1,0 +1,33 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  A9-S-lambda-read-csv-s3
+
+  Sample SAM Template for S-lambda-read-csv-s3
+
+
+Resources:
+  S3Bucket:
+   Type: AWS::S3::Bucket
+   Properties:
+     BucketName: s-s3-csv-lambda
+
+  LambdaReadcsvS3:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./lambda-access-s3
+      Handler: app.lambda_handler
+      Runtime: python3.11
+      Policies:
+        - S3CrudPolicy:
+              BucketName: !Ref S3Bucket
+           
+Outputs:
+ 
+  S3Bucket:
+    Description: The name of the S3 bucket s-s3-csv-lambda
+    Value: !GetAtt S3Bucket.Arn
+  
+  LambdaReadcsvS3:
+    Description: The ARN of the Lambda function
+    Value: !GetAtt LambdaReadcsvS3.Arn
