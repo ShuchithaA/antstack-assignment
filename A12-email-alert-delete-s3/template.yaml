@@ -20,7 +20,7 @@ Resources:
     Properties:
       CodeUri: ./S3EventListener
       Handler: app.lambda_handler
-      Runtime: python3.11
+      Runtime: python3.9
       Environment:
         Variables:
           SENDER_EMAIL: shuchitha.m@antstack.io
@@ -33,12 +33,6 @@ Resources:
             - ses:SendEmail
             - ses:SendRawEmail
             Resource: "*"
-        - Statement:
-          - Effect: Allow
-            Action:
-            - codepipeline:PutJobSuccessResult
-            Resource: '*'
-
       Events:
         S3Event:
           Type: S3
