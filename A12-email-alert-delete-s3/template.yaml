@@ -1,0 +1,173 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  A12-email-alert-delete-s3
+
+  Sample SAM Template for A12-email-alert-delete-s3
+
+Resources:
+  MyBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: email-alert-img-bucket
+
+  EmailAlertCicdArtifacts:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: email-alert-cicd-artifacts
+  EmailAlertS3Delete:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./S3EventListener
+      Handler: app.handler
+      Runtime: python3.11
+      Environment:
+        Variables:
+          SENDER_EMAIL: shuchitha.m@antstack.io
+          RECIPIENT_EMAIL: 1rn19is150.shuchitham@gmail.com
+          REGION: ap-south-1
+      Policies:
+        - Statement:
+          - Effect: Allow
+            Action:
+            - ses:SendEmail
+            - ses:SendRawEmail
+            Resource: "*"
+      Events:
+        S3Event:
+          Type: S3
+          Properties:
+            Bucket: !Ref MyBucket
+            Events: s3:ObjectRemoved:Delete
+
+  CodeCommitRepository:
+    Type: AWS::CodeCommit::Repository
+    Properties:
+      RepositoryName: EmailAlertRepo
+      RepositoryDescription: code commit repo
+
+  CodeBuildRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: codebuild.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: CodeBuildPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - 's3:GetObject'
+                  - 's3:GetObjectVersion'
+                  - 's3:GetBucketVersioning'
+                Resource: !GetAtt EmailAlertCicdArtifacts.Arn
+              - Effect: Allow
+                Action:
+                  - 'codecommit:GitPull'
+                Resource: !GetAtt CodeCommitRepository.Arn
+              - Effect: Allow
+                Action:
+                  - 'logs:CreateLogGroup'
+                  - 'logs:CreateLogStream'
+                  - 'logs:PutLogEvents'
+                Resource: '*'
+
+
+  CodeBuildProject:
+    Type: AWS::CodeBuild::Project
+    Properties:
+      Name: BuildEmailAlert
+      Description: CodeBuild Project
+      ServiceRole: !GetAtt CodeBuildRole.Arn  
+      Source:
+        Type: CODECOMMIT
+        Location: !GetAtt CodeCommitRepository.CloneUrlHttp
+        BuildSpec: ./A12_email_alert_delete_s3/buildspec.yaml
+      Artifacts:
+        Location: !GetAtt EmailAlertCicdArtifacts.Arn 
+        Name: "build-output"
+        Packaging: "ZIP"
+        Path: "/build-output"
+        Type: "S3"
+      Environment:
+        Type: LINUX_CONTAINER
+        ComputeType: BUILD_GENERAL1_SMALL
+        Image: aws/codebuild/standard:4.0
+      LogsConfig:
+        CloudWatchLogs: 
+          Status: "ENABLED"
+
+
+  CodePipelineRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: codepipeline.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - "arn:aws:iam::aws:policy/AWSCodeCommitFullAccess" 
+        - "arn:aws:iam::aws:policy/AWSCodeBuildAdminAccess" 
+        - "arn:aws:iam::aws:policy/AmazonS3FullAccess"
+        - "arn:aws:iam::aws:policy/AWSLambda_FullAccess"
+
+  CodePipeline:
+    Type: AWS::CodePipeline::Pipeline
+    Properties:
+      Name: PipelineEmailAlert
+      RoleArn: !GetAtt CodePipelineRole.Arn
+      ArtifactStore:
+        Location: email-alert-cicd-artifacts
+        Type: S3
+      Stages:
+      - Name: Source
+        Actions:
+          - Name: SourceActions
+            ActionTypeId:
+              Category: Source
+              Owner: AWS
+              Version: "1"
+              Provider: CodeCommit
+            OutputArtifacts:
+              - Name: SourceOutput
+            Configuration:
+              RepositoryName: !GetAtt CodeCommitRepository.Arn
+              BranchName: master
+              PollForSourceChanges: false
+      - Name: Build
+        Actions:
+          - Name: CodeBuildAction
+            ActionTypeId:
+              Category: Build
+              Owner: AWS
+              Version: "1"
+              Provider: CodeBuild
+            InputArtifacts:
+              - Name: SourceOutput
+            OutputArtifacts:
+              - Name: BuildOutput
+            Configuration:
+              ProjectName: BuildEmailAlert
+      - Name: Deploy
+        Actions:
+          - Name: DeployAction
+            ActionTypeId:
+              Category: Invoke
+              Owner: AWS
+              Version: "1"
+              Provider: Lambda  
+            InputArtifacts:
+              - Name: BuildOutput
+            OutputArtifacts:
+              - Name: Deployoutput
+            Configuration:
+              FunctionName: EmailAlertS3Delete

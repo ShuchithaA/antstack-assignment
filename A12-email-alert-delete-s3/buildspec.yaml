@@ -1,0 +1,30 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      python: 3.9
+
+  pre_build:
+    commands:
+      - cd A12_email_alert_delete_s3
+      # - cd tests/unit
+      # - pip install pytest
+      # - pytest test_app.py
+
+  build:
+    commands: 
+      - sam build
+
+  post_build:
+    commands:
+      - echo "Build output copied to S3 bucket"
+
+artifacts:
+  files:
+    - '**/*'
+  name: build-output
+  artifact: !GetAtt BucketCicdArtifacts.Arn
+
+      
+  
