@@ -19,7 +19,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: ./S3EventListener
-      Handler: app.handler
+      Handler: app.lambda_handler
       Runtime: python3.11
       Environment:
         Variables:
@@ -88,7 +88,7 @@ Resources:
       Source:
         Type: CODECOMMIT
         Location: !GetAtt CodeCommitRepository.CloneUrlHttp
-        BuildSpec: ./A12_email_alert_delete_s3/buildspec.yaml
+        # BuildSpec: ./A12_email_alert_delete_s3/buildspec.yaml
       Artifacts:
         Location: !GetAtt EmailAlertCicdArtifacts.Arn 
         Name: "build-output"
