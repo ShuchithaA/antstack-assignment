@@ -7,7 +7,7 @@ phases:
 
   pre_build:
     commands:
-      - cd A12_email_alert_delete_s3
+      - cd A12-email-alert-delete-s3
       # - cd tests/unit
       # - pip install pytest
       # - pytest test_app.py
