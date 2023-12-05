@@ -33,11 +33,16 @@ Resources:
             - ses:SendEmail
             - ses:SendRawEmail
             Resource: "*"
+        - Statement:
+          - Effect: Allow
+            Action:
+            - codepipeline:PutJobSuccessResult
+            Resource: '*'
       Events:
         S3Event:
           Type: S3
           Properties:
-            Bucket: !Ref MyBucket
+            Bucket:!Ref MyBucket
             Events: s3:ObjectRemoved:Delete
 
   CodeCommitRepository:
