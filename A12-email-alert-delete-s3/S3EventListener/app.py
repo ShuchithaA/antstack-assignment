@@ -7,10 +7,11 @@ ses_client = boto3.client('ses', region_name=os.getenv('REGION'))
 sender = os.getenv('SENDER_EMAIL')
 recipient = os.getenv('RECIPIENT_EMAIL')
 
+
 def lambda_handler(event, context):
    #for each record check for delete  
-   for record in event['Records']:
-       if record['eventName'] == 'ObjectRemoved:Delete':
+    for record in event['Records']:
+        if record['eventName'] == 'ObjectRemoved:Delete':
            bucket_name = record['s3']['bucket']['name']
            object_key = record['s3']['object']['key']
            #construct email    
@@ -39,3 +40,5 @@ def lambda_handler(event, context):
                print(e.response['Error']['Message'])
            else:
                print("Email sent! Message Id:", response['MessageId'])
+# call PutJobSuccessResult
+    pipeline.put_job_success_result(jobId=event['CodePipeline.job']['id'])

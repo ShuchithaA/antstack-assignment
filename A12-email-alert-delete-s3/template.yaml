@@ -66,6 +66,7 @@ Resources:
                   - 's3:GetObject'
                   - 's3:GetObjectVersion'
                   - 's3:GetBucketVersioning'
+                  - 'S3:PutObject'
                 Resource: !GetAtt EmailAlertCicdArtifacts.Arn
               - Effect: Allow
                 Action:
