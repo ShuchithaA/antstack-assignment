@@ -7,30 +7,24 @@ phases:
 
   pre_build:
     commands:
-      - cd A7-sam-app-url-shortener 
-      - pip install -r requirements.txt
-      - cd tests/unit
-      - pip install pytest
-      - pytest test_app.py
+      - cd A12_email_alert_delete_s3
+      # - cd tests/unit
+      # - pip install pytest
+      # - pytest test_app.py
 
   build:
-    commands:
-      - cd ../..  
+    commands: 
       - sam build
 
   post_build:
     commands:
-    
       - echo "Build output copied to S3 bucket"
 
 artifacts:
   files:
     - '**/*'
-  
   name: build-output
-  artifact: s3://s-bucket-cicd1/build-output/
+  artifact: !GetAtt BucketCicdArtifacts.Arn
 
-
-
-
-# - sam deploy --stack-name sam-app-url-shortener --region ap-south-1 --parameter-overrides S3BucketName=s-bucket-cicd1 --no-confirm-changeset --no-fail-on-empty-changeset --capabilities CAPABILITY_IAM --resolve-s3
+      
+  
