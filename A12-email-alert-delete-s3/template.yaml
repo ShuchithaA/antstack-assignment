@@ -43,7 +43,7 @@ Resources:
           Type: S3
           Properties:
             Bucket:!Ref MyBucket
-            Events: s3:ObjectRemoved:Delete
+            Events: s3:ObjectRemoved:Delete:*
 
   CodeCommitRepository:
     Type: AWS::CodeCommit::Repository
