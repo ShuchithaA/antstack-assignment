@@ -1,0 +1,5 @@
+{
+    "python.analysis.extraPaths": [
+        "./A12-email-alert-delete-s3/S3EventListener"
+    ]
+}

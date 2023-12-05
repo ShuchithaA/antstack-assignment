@@ -1,0 +1,60 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  Sam-app-GenAI-proj
+
+  Sample SAM Template for Sam-app-GenAI-proj
+
+Resources:
+  S3Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: storedocument
+  GenAILambda:
+    Type: AWS::Serverless::Function 
+    Properties:
+      CodeUri: ./GenAI-proj
+      Handler: Gen_AI_lambda.lambda_handler
+      Runtime: python3.9
+      Policies:
+      - Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Action:
+              - 's3:PutObject'
+            Resource: !GetAtt S3Bucket.Arn 
+      Events:
+        HelloWorld:
+          Type: Api 
+          Properties:
+            Path: /doc
+            Method: get
+
+  StoredocLambda:
+    Type: AWS::Serverless::Function 
+    Properties:
+      CodeUri: ./GenAI-proj
+      Handler: upload_doc_lambda.lambda_handler
+      Runtime: python3.9
+      Architectures:
+      - x86_64
+      Events:
+        HelloWorld:
+          Type: Api 
+          Properties:
+            Path: /query
+            Method: get
+
+Outputs:
+  S3Bucket:
+    Description: the s3 bucket is storedocument
+    Value: !GetAtt S3Bucket.Arn
+
+  GenAILambda:
+    Description: Gen AI lambda
+    Value: !GetAtt GenAILambda.Arn
+
+  StoredocLambda:
+    Description: lambda for storing doc
+    Value: !GetAtt StoredocLambda.Arn
+

@@ -32,6 +32,7 @@ Resources:
             Action:
             - ses:SendEmail
             - ses:SendRawEmail
+            - codepipeline:PutJobSuccessResult
             Resource: "*"
       Events:
         S3Event:
