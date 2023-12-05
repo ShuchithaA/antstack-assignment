@@ -10,17 +10,21 @@ sys.path.append(app_dir)
 import S3EventListener
 from S3EventListener.app import lambda_handler
 
-# Set environment variables
-os.environ['SENDER_EMAIL'] = 'shuchitha.m@antstack.io'
-os.environ['RECIPIENT_EMAIL'] = '1rn19is150.shuchitham@gmail.com'
+
 
 
 @patch('boto3.client')
 def test_lambda_handler(mock_boto3_client):
    # Mock the SES client
    mock_ses_client = mock_boto3_client.return_value
-   mock_ses_client.send_email.return_value = {'MessageId': 'test_message_id'}
+   mock_ses_client.send_email.return_value = {
+      'MessageId': 'test_message_id',
+      'Source': os.getenv('SENDER_EMAIL')
+    }
 
+    # Set environment variables
+   os.environ['SENDER_EMAIL'] = 'shuchitha.m@antstack.io'
+   os.environ['RECIPIENT_EMAIL'] = '1rn19is150.shuchitham@gmail.com'
    # Mock the event and context
    event = {
        'Records': [
