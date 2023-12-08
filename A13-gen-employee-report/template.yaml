@@ -1,0 +1,101 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  A13-gen-employee-report
+
+  Sample SAM Template for A13-gen-employee-report
+
+Resources: 
+  MyS3Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: emp-dataset
+ 
+  DynamoDBTable: 
+    Type: AWS::DynamoDB::Table
+    Properties: 
+      AttributeDefinitions: 
+        - AttributeName: "Name"
+          AttributeType: "S"
+        - AttributeName: "SalaryorHourly"
+          AttributeType: "S"
+        
+      KeySchema: 
+        - AttributeName: "Name"
+          KeyType: HASH
+
+      GlobalSecondaryIndexes:
+       - IndexName: SalaryOrHourlyIndex
+         KeySchema:
+           - AttributeName: SalaryorHourly
+             KeyType: HASH
+         Projection:
+           ProjectionType: ALL
+
+      BillingMode: "PAY_PER_REQUEST"
+      TableName: "EmployeeReportGendata"
+      ImportSourceSpecification: 
+        InputFormat: "CSV"
+        S3BucketSource:
+           S3Bucket: "emp-dataset"
+
+  ControlTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      BillingMode: "PAY_PER_REQUEST"
+      TableName: "ControlTable"
+
+  MyDynamoDBAccessRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: dynamodb.amazonaws.com
+            Action: 'sts:AssumeRole'
+      Policies:
+        - PolicyName: DynamoDBAccessPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - 'dynamodb:GetItem'
+                Resource: !GetAtt DynamoDBTable.Arn
+
+  EmployeeReportGen:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: app.lambda_handler
+      Runtime: python3.11
+      CodeUri: ./ReportGen
+      Description: A Lambda function that queries a DynamoDB table and generates report
+      Policies:
+        - Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action: 'dynamodb:*'
+              Resource: '*'
+        - Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action:
+                - 's3:PutObject'
+                - 's3:GetObject'
+                - 's3:PutObjectAcl'
+              Resource: '*'
+
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            Path: /report
+            Method: get
