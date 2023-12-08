@@ -11,6 +11,12 @@ Resources:
     Properties:
       BucketName: email-alert-img-bucket
 
+  Bucketemailformat:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: bucket-email-format
+
+
   EmailAlertCicdArtifacts:
     Type: AWS::S3::Bucket
     Properties:
@@ -32,6 +38,7 @@ Resources:
             Action:
             - ses:SendEmail
             - ses:SendRawEmail
+            - s3:GetObject
             - codepipeline:PutJobSuccessResult
             Resource: "*"
       Events:
